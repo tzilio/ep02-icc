@@ -1,3 +1,5 @@
+// THIAGO ZILIO GRR202342
+
 #ifndef __EQDIFF_H__
 #define __EQDIFF_H__
 

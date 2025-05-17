@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "edo.h"
 
+// Gera sistema tridiagonal a partir de parâmetros da EDO
 Tridiag *genTridiag (EDo *edo)
 {
   Tridiag *sl;
@@ -15,7 +16,7 @@ Tridiag *genTridiag (EDo *edo)
   
   sl = (Tridiag *) malloc (sizeof(Tridiag));
   sl->n = edo->n;
-
+  // Vetores da matriz e do RHS
   sl->D = (real_t *) calloc(n, sizeof(real_t));
   sl->Di = (real_t *) calloc(n, sizeof(real_t));
   sl->Ds = (real_t *) calloc(n, sizeof(real_t));
@@ -33,6 +34,7 @@ Tridiag *genTridiag (EDo *edo)
     sl->Ds[i] = 1 + h * edo->p/2.0;
   }
 
+  // Ajuste pelos contornos
   sl->B[0] -= edo->ya * (1 - h*edo->p/2.0);
   sl->B[n-1] -= edo->yb * (1 + h*edo->p/2.0);
   
@@ -80,34 +82,36 @@ void prnEDOsl (EDo *edoeq)
   }
 }
 
+// Fatoração LU in-place em tridiagonal
 void factor_LU(Tridiag *sl) {
   int n = sl->n;
   for (int i = 1; i < n; i++) {
-    sl->Di[i] /= sl->D[i-1];
-    sl->D[i] -= sl->Di[i] * sl->Ds[i-1];
+    sl->Di[i] /= sl->D[i-1]; // L Multiplier
+    sl->D[i] -= sl->Di[i] * sl->Ds[i-1]; // U diagonal update
   }
 }
 
+// Resolve sistema reduzido LU via substituição
 real_t *solve_tridiag(Tridiag *sl) {
   int n = sl->n;
-  real_t *y = malloc(n *sizeof(real_t));
-  real_t *x = malloc(n * sizeof(real_t));
+  real_t *y = malloc(n *sizeof(real_t)); //temporario
+  real_t *x = malloc(n * sizeof(real_t)); //solução
   if (!y || !x) {
     fprintf(stderr, "Erro Memória");
     exit(EXIT_FAILURE);
   }
 
   y[0] = sl->B[0];
-  for (int i = 1; i < n; ++i) y[i] = sl->B[i] - sl->Di[i] * y[i-1];
+  for (int i = 1; i < n; ++i) y[i] = sl->B[i] - sl->Di[i] * y[i-1]; //forward
 
   x[n-1] = y[n-1] / sl->D[n-1];
-  for (int i = n-2; i >=0; --i) x[i] = (y[i] - sl->Ds[i] * x[i+1]) / sl->D[i];
+  for (int i = n-2; i >=0; --i) x[i] = (y[i] - sl->Ds[i] * x[i+1]) / sl->D[i]; //backward
 
   free(y);
   return x;
 }
 
-
+//libera a memoria do sistema tridiagonal
 void free_tridiag(Tridiag *sl) {
   free(sl->Di);
   free(sl->D);

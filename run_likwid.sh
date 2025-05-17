@@ -1,5 +1,7 @@
+# THIAGO ZILIO GRR202342
+
 #!/usr/bin/env bash
-# run_likwid.sh — saída normal + depois só FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,valor
+# run_likwid.sh — saída normal +  FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,valor
 # Uso: ./run_likwid.sh [INPUT_FILE] [CPU]
 
 INPUT=${1:-}    
